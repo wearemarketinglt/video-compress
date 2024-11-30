@@ -26,7 +26,13 @@ export async function POST({ request, params }) {
     }
 
     return new Promise((resolve, reject) => {
-        ffmpeg(input)
+        const ffmpegCommand = ffmpeg(input)
+
+        if (noaudio) {
+            ffmpegCommand.addOption(`${noaudio ? '-an' : ''}`);
+        }
+
+        ffmpegCommand
             .videoCodec(codec)
             .format(codec === 'mjpeg' ? 'image2' : 'mp4')
             .output(output)
@@ -40,7 +46,6 @@ export async function POST({ request, params }) {
                 `-crf ${quality}`,
                 '-movflags frag_keyframe+empty_moov',
                 '-movflags faststart',
-                `${noaudio ? '-an' : ''}`,
                 ]
             )
             .on('progress', (progress) => {
