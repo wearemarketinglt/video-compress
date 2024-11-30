@@ -73,7 +73,7 @@
                     <div class="flex gap-2 items-center">
                         <input type="hidden" name="uuid" value="{file.uuid}">
                         <a href="/{file.uuid}" class="button text-xs bg-green-400 border-green-400">View</a>
-                        <button formaction="?/extend" type="submit" class="bg-orange-400 border-orange-400 text-xs">Extend</button>
+                        <button formaction="?/extend" type="submit" class="bg-orange-400 border-orange-400 text-xs max-lg:hidden">Extend</button>
                         <button formaction="?/delete" type="submit" class="border-0 p-0 lg:hover:bg-transparent" aria-label="Delete">
                             <svg class="w-5 h-auto fill-white" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="-5.0 -10.0 110.0 135.0">
                                 <path d="m66.227 94.266h-32.07c-2.9062 0.003906-5.6836-1.1875-7.6836-3.2891-1.9727-2.1016-3.1758-4.8047-3.4141-7.6758l-5.1367-55.109c-0.058594-0.82031 0.54688-1.5391 1.3672-1.6172 0.82031-0.074219 1.5469 0.51953 1.6406 1.3359l5.1328 55.113c0.44141 4.7656 3.8438 8.2227 8.0898 8.2227h32.07c4.2461 0 7.6484-3.4609 8.0898-8.2227l5.1406-55.113c0.09375-0.81641 0.82031-1.4102 1.6406-1.3359 0.82031 0.078125 1.4258 0.79688 1.3672 1.6172l-5.1406 55.113c-0.27344 2.9453-1.4844 5.6641-3.4141 7.6719-2 2.1016-4.7773 3.293-7.6797 3.2891z"/>

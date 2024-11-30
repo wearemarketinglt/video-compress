@@ -124,7 +124,7 @@
                         <label>
                             Quality:
                             <input type="number" name="quality" required min="20" max="35" value="30" class="w-16 text-center">
-                            <span class="text-sm">From 20 to 35 (lower number = better quality)</span>
+                            <span class="text-sm">20 to 35 (lower number = better quality)</span>
                         </label>
                     </div>
                     <div>
