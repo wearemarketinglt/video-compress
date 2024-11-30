@@ -8,5 +8,6 @@ export const filesTable = sqliteTable('file', {
     processed: integer('processed'),
     processed_date: text('proc_date'),
     quality: integer('quality'),
+    size: integer('size'),
     uuid: text('uuid'),
 })

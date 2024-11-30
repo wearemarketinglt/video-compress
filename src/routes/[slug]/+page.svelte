@@ -104,7 +104,7 @@
                         <button onclick={() => downloadFile(selectedFile.uuid, true)} class="bg-green-400 border-green-400 text-sm">Download poster</button>
                     </div>
                     <div class="mt-5">
-                        <p class="text-sm">Quality: {selectedFile.quality}</p>
+                        <p class="text-sm">Quality: {selectedFile.quality} {#if selectedFile.size} | {selectedFile.size} MB {/if}</p>
                         <p class="text-sm">Compressed at: {selectedFile.processed_date}</p>
                     </div>
                 {/if}
