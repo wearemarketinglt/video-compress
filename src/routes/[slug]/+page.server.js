@@ -89,7 +89,7 @@ export const actions = {
                 await db.update(filesTable).set({processed: 1}).where(eq(filesTable.uuid, id))
                 await db.update(filesTable).set({processed_date: formatDate(new Date())}).where(eq(filesTable.uuid, id))
                 await db.update(filesTable).set({quality}).where(eq(filesTable.uuid, id))
-                await db.update(filesTable).set({expiry_date: formatDate(new Date(), 2)}).where(eq(filesTable.uuid, id))
+                await db.update(filesTable).set({expiry_date: formatDate(new Date(), 1)}).where(eq(filesTable.uuid, id))
                 await db.update(filesTable).set({size: size.toFixed(2)}).where(eq(filesTable.uuid, id))
 
                 return {

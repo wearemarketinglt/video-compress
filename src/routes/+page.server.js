@@ -33,7 +33,7 @@ export const actions = {
         const item = {
             name: file_name,
             format,
-            expiry_date: formatDate(new Date()),
+            expiry_date: formatDate(new Date(), 1),
             uuid: uuid
         }
 
@@ -50,7 +50,7 @@ export const actions = {
             return
         }
 
-        await db.update(filesTable).set({expiry_date: formatDate(new Date(), 2)}).where(eq(filesTable.uuid, uuid))
+        await db.update(filesTable).set({expiry_date: formatDate(new Date(), 1)}).where(eq(filesTable.uuid, uuid))
     },
 	delete: async ({request}) => {
         const data = await request.formData()
