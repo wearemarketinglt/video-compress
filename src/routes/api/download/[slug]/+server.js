@@ -44,7 +44,7 @@ export async function GET({ url, params }) {
     return new Response(stream, {
         headers: {
             'Content-Type': 'application/octet-stream',
-            'Content-Disposition': `attachment; filename="${name}"`,
+            'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(name)}`,
         },
     })
 }

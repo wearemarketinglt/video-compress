@@ -68,7 +68,7 @@
         {:else}
             {#each files as file, i}
                 <form method="POST" use:enhance class="grid grid-cols-3 gap-4 items-center px-5 py-2.5 border-b border-white/[.2] text-sm lg:text-base">
-                    <div>{file.name}</div>
+                    <div class="overflow-hidden text-ellipsis">{file.name}</div>
                     <div>{file.expiry_date}</div>
                     <div class="flex gap-2 items-center">
                         <input type="hidden" name="uuid" value="{file.uuid}">
