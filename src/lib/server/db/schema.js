@@ -7,6 +7,7 @@ export const filesTable = sqliteTable('file', {
     expiry_date: text('expiry_date'),
     processed: integer('processed'),
     processed_date: text('proc_date'),
+    compressing: integer('compressing'),
     quality: integer('quality'),
     size: integer('size'),
     uuid: text('uuid'),

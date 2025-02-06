@@ -5,21 +5,50 @@
 
     const { id, status } = data
 
-    let compressing = $state(false)
+    let selectedFile = $state(data.selectedFile)
+    let compressing = $state(data.selectedFile?.compressing)
     let oldFileName = $state(data.selectedFile?.name)
     let escapePressed = $state(false)
     let compressForm = $state({})
     let name = $state(data.selectedFile?.name)
 
+    let interval
+
     $effect(() => {
         if (status === 200) {
-            compressing = false
+            if (!data.selectedFile.compressing) {
+                compressing = false
+                selectedFile = data.selectedFile
+            } else {
+                // check every 2 seconds if the file is done compressing
+                interval = setInterval(() => compressionStatus(id), 2000)
+            }
 
             if (form?.rename) {
                 name = form.rename.name
             }
         }
     })
+
+    async function compressionStatus(id) {
+        try {
+            const response = await fetch(`/api/check/${id}`)
+            if (!response.ok) {
+                console.error(`Request failed with status ${response.status}`)
+                return
+            }
+
+            const result = await response.json()
+
+            if (!result.compressing) {
+                clearInterval(interval)
+                selectedFile = result.selectedFile
+                compressing = false
+            }
+        } catch (error) {
+            console.error('Error during polling:', error.message)
+        }
+    }
 
     function renameKeyboard(event) {
         if (event.key === 'Escape') {
@@ -63,89 +92,81 @@
             body: JSON.stringify(compressForm)
 
         })
-
-        if (res.ok) {
-            compressing = false
-        }
     }
 </script>
 
 
 <section class="px-5">
-    {#await data.selectedFile}
-        <p>Loading ....</p>
-    {:then selectedFile}
-        {#if status == 200}
-            <form 
-                use:enhance 
-                method="POST"
-                action="/{id}?/rename"
-                onsubmit={() => oldFileName = selectedFile.name}
-            >
-                <div class="flex items-center gap-1 group">
-                    <input 
-                        bind:value={name}
-                        onkeydown={(event) => renameKeyboard(event)}
-                        onfocusout={() => renameFocus(event)}
-                        name="name" 
-                        type="text" required 
-                        class="text-2xl xl:text-3xl w-auto min-w-0 -translate-x-1 border-transparent hover:border-white/[.2] focus:border-white/[.2]"
-                    >
-                    <button type="submit" class="hidden">Save</button>
-                </div>
-            </form>
-            <div class="{selectedFile.processed || compressing ? 'mt-5 mb-10' : ''}">
-                {#if compressing}
-                    <p>Compressing<span>.</span><span class="animate-[compressing_.7s__linear_infinite]">.</span><span class="animate-[compressing_.7s__linear_infinite]" style="animation-delay:.1s">.</span>
-                    </p>
-                {:else if selectedFile.processed}
-                    <div class="flex gap-2">
-                        <button onclick={() => downloadFile(selectedFile.uuid)} class="bg-green-400 border-green-400 text-sm">Download</button>
-                        <button onclick={() => downloadFile(selectedFile.uuid, true)} class="bg-green-400 border-green-400 text-sm">Download poster</button>
-                    </div>
-                    <div class="mt-5">
-                        <p class="text-sm">Quality: {selectedFile.quality} {#if selectedFile.size} | {selectedFile.size} MB {/if}</p>
-                        <p class="text-sm">Compressed at: {selectedFile.processed_date}</p>
-                    </div>
-                {/if}
+    {#if status == 200}
+        <form 
+            use:enhance 
+            method="POST"
+            action="/{id}?/rename"
+            onsubmit={() => oldFileName = selectedFile.name}
+        >
+            <div class="flex items-center gap-1 group">
+                <input 
+                    bind:value={name}
+                    onkeydown={(event) => renameKeyboard(event)}
+                    onfocusout={() => renameFocus(event)}
+                    name="name" 
+                    type="text" required 
+                    class="text-2xl xl:text-3xl w-auto min-w-0 -translate-x-1 border-transparent hover:border-white/[.2] focus:border-white/[.2]"
+                >
+                <button type="submit" class="hidden">Save</button>
             </div>
-            <form 
-                bind:this={compressForm}
-                method="POST"
-                action="/{id}?/compress"
-                use:enhance
-                onsubmit={compressing =! compressing}
-            >
+        </form>
+        <div class="{selectedFile.processed || compressing ? 'mt-5 mb-10' : ''}">
+            {#if compressing}
+                <p>Compressing<span>.</span><span class="animate-[compressing_.7s__linear_infinite]">.</span><span class="animate-[compressing_.7s__linear_infinite]" style="animation-delay:.1s">.</span>
+                </p>
+            {:else if selectedFile.processed}
+                <div class="flex gap-2">
+                    <button onclick={() => downloadFile(selectedFile.uuid)} class="bg-green-400 border-green-400 text-sm">Download</button>
+                    <button onclick={() => downloadFile(selectedFile.uuid, true)} class="bg-green-400 border-green-400 text-sm">Download poster</button>
+                </div>
                 <div class="mt-5">
-                    {#if selectedFile.processed}
-                        <h3 class="text-2xl xl:text-3xl">Redo</h3>
-                    {/if}
-                    <div class="mt-3">
-                        <label>
-                            Quality:
-                            <input type="number" name="quality" required min="20" max="35" value="30" class="w-16 text-center">
-                            <span class="text-sm">20 to 35 (lower number = better quality)</span>
-                        </label>
-                    </div>
-                    <div>
-                        <label>
-                            <input type="checkbox" name="noaudio" checked>
-                            <span class="text-sm">No audio</span>
-                        </label>
-                    </div>
-                    <button type="submit" class="bg-orange-400 border-orange-400 text-sm mt-5">Compress</button>
+                    <p class="text-sm">Quality: {selectedFile.quality} {#if selectedFile.size} | {selectedFile.size} MB {/if}</p>
+                    <p class="text-sm">Compressed at: {selectedFile.processed_date}</p>
                 </div>
-            </form>
-        {:else if status === 404}
-            <div>
-                <p>File not found</p>
+            {/if}
+        </div>
+        <form 
+            bind:this={compressForm}
+            method="POST"
+            action="/{id}?/compress"
+            use:enhance
+            onsubmit={compressing = true}
+        >
+            <div class="mt-5">
+                {#if selectedFile.processed}
+                    <h3 class="text-2xl xl:text-3xl">Redo</h3>
+                {/if}
+                <div class="mt-3">
+                    <label>
+                        Quality:
+                        <input type="number" name="quality" required min="20" max="35" value="30" class="w-16 text-center">
+                        <span class="text-sm">20 to 35 (lower number = better quality)</span>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="noaudio" checked>
+                        <span class="text-sm">No audio</span>
+                    </label>
+                </div>
+                <button type="submit" class="bg-orange-400 border-orange-400 text-sm mt-5">Compress</button>
             </div>
-        {:else}
-            <div>
-                <p>Something went wrong, please try again later</p>
-            </div>
-        {/if}
-    {/await}
+        </form>
+    {:else if status === 404}
+        <div>
+            <p>File not found</p>
+        </div>
+    {:else}
+        <div>
+            <p>Something went wrong, please try again later</p>
+        </div>
+    {/if}
 </section>
 
 
