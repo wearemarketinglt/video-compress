@@ -127,7 +127,9 @@
                 </div>
                 <div class="mt-5">
                     <p class="text-sm">Quality: {selectedFile.quality} {#if selectedFile.size} | {selectedFile.size} MB {/if}</p>
-                    <p class="text-sm">Compressed at: {selectedFile.processed_date}</p>
+                    {#if selectedFile.end_date}
+                        <p class="text-sm">Last compressed at: {selectedFile.end_date}</p>
+                    {/if}
                 </div>
             {/if}
         </div>

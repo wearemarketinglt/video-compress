@@ -15,9 +15,23 @@ export async function GET({ url, params }) {
     }
 
     if (selectedFile[0].compressing) {
-        console.log('File still compressing')
+        let compressing = selectedFile[0].compressing
+
+        // if started more than 5 minutes ago, set compressing to false
+        if (selectedFile[0].start_date) {
+            const startDate = new Date(selectedFile[0].start_date)
+            const currentDate = new Date()
+            const diff = (currentDate - startDate) / 1000 / 60
+
+            if (diff > 5) {
+                await db.update(filesTable).set({ compressing: 0 }).where(eq(filesTable.uuid, id))
+                await db.update(filesTable).set({ start_date: null }).where(eq(filesTable.uuid, id))
+                compressing = 0
+            }
+        }
+
         return new Response(
-            JSON.stringify({ compressing: selectedFile[0].compressing }),
+            JSON.stringify({ compressing: compressing }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         )
     }
