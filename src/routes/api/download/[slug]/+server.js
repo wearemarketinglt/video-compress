@@ -1,4 +1,4 @@
-import { existsSync, createReadStream } from 'fs'
+import { existsSync, createReadStream, statSync } from 'fs'
 import { resolve } from 'path'
 import { eq } from 'drizzle-orm'
 import { filesTable } from '$lib/server/db/schema'
@@ -42,9 +42,12 @@ export async function GET({ url, params }) {
     const stream = createReadStream(filePath)
 
     if (url.searchParams.get('preview')) {
+        const stats = statSync(filePath);
         return new Response(stream, {
             headers: {
                 'Content-Type': 'video/mp4',
+                'Accept-Ranges': 'bytes',
+                'Content-Length': stats.size,
             },
         })
     }
