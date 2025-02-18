@@ -104,13 +104,16 @@
     }
 
     function setPreview(state) {
-        preview = state ? true : false
+        if (state) {
+            preview = true
+        }
         globalPreview = state ? true : false
         window.localStorage.setItem('previews', state)
     }
 
     onMount(() => {
         globalPreview = window.localStorage.getItem('previews') === 'true'
+        preview = globalPreview
     })
 </script>
 
@@ -150,9 +153,7 @@
                 <div class="flex gap-2 flex-wrap">
                     <button onclick={() => downloadFile(selectedFile.uuid)} class="bg-green-400 border-green-400 text-sm">Download</button>
                     <button onclick={() => downloadFile(selectedFile.uuid, true)} class="bg-green-400 border-green-400 text-sm">Download poster</button>
-                    {#if !globalPreview}
-                        <button onclick={() => preview = !preview} class="bg-orange-400 border-green-400 text-sm">Preview</button>
-                    {/if}
+                    <button onclick={() => preview = !preview} class="bg-green-400 border-green-400 text-sm">Preview</button>
                 </div>
                 <div class="mt-5">
                     <p class="text-sm">Quality: {selectedFile.quality} {#if selectedFile.size} | {selectedFile.size} MB {/if}</p>
@@ -189,9 +190,9 @@
                 <button type="submit" class="bg-orange-400 border-orange-400 text-sm mt-5">Compress</button>
             </div>
         </form>
-        {#if selectedFile.processed && !compressing && (preview || globalPreview)}
+        {#if selectedFile.processed && !compressing && preview}
             <div class="mt-10 mb-5">
-                <video controls autoplay muted loop playsinline class="w-full h-auto object-cover">
+                <video controls autoplay muted loop playsinline class="max-w-full h-auto object-cover">
                     <source src="/api/download/{selectedFile.uuid}?preview=true" type="video/mp4">
                     <track kind="captions" src="" label="Captions" default>
                     Your browser does not support the video tag.
