@@ -19,7 +19,9 @@ form input::placeholder {
 }
 
 button, .button {
-    @apply text-black py-1 px-2 rounded-lg uppercase lg:hover:bg-white lg:hover:border-white;
+    &:not(.no-styling) {
+        @apply text-black py-1 px-2 rounded-lg uppercase lg:hover:bg-white lg:hover:border-white;
+    }
 }
 
 @keyframes compressing {

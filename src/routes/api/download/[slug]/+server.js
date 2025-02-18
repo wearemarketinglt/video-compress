@@ -41,6 +41,14 @@ export async function GET({ url, params }) {
 
     const stream = createReadStream(filePath)
 
+    if (url.searchParams.get('preview')) {
+        return new Response(stream, {
+            headers: {
+                'Content-Type': 'video/mp4',
+            },
+        })
+    }
+
     return new Response(stream, {
         headers: {
             'Content-Type': 'application/octet-stream',
