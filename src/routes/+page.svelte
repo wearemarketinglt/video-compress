@@ -59,8 +59,8 @@
     {:then files}
     <div class="row">
         <div class="grid grid-cols-3 gap-4 px-5 py-2 border-b border-white/[.2] text-sm lg:text-base">
-            <div>Name</div>
-            <div>Expires</div>
+            <div class="max-md:col-span-2">Name</div>
+            <div class="max-md:hidden">Expires</div>
             <div>Actions</div>
         </div>
         {#if files.length === 0}
@@ -68,8 +68,8 @@
         {:else}
             {#each files as file, i}
                 <form method="POST" use:enhance class="grid grid-cols-3 gap-4 items-center px-5 py-2.5 border-b border-white/[.2] text-sm lg:text-base">
-                    <div class="overflow-hidden text-ellipsis">{file.name}</div>
-                    <div>{file.expiry_date}</div>
+                    <div class="overflow-hidden text-ellipsis max-md:col-span-2">{file.name}</div>
+                    <div class="max-md:hidden">{file.expiry_date}</div>
                     <div class="flex gap-2 items-center">
                         <input type="hidden" name="uuid" value="{file.uuid}">
                         <a href="/{file.uuid}" class="button text-xs bg-green-400 border-green-400">View</a>
@@ -96,7 +96,7 @@
 </section>
 
 
-<section class="px-5 mt-10">
+<section class="px-5 mt-7 lg:mt-10 mb-5">
     <div class="row">
         <h3 class="text-lg lg:text-xl xl:text-2xl">Upload from computer</h3>
     </div>
@@ -105,11 +105,11 @@
             method="POST" 
             action="?/upload"
             enctype="multipart/form-data" 
-            class="flex gap-3 items-center flex-wrap"
+            class="flex gap-3 items-center"
             onsubmit={uploadFile}
         >
-            <input bind:this={file} type="file" name="file" accept=".mp4, .mov" required>
-            <button type="submit" class="bg-green-400 border-green-400 text-sm select-none {progress > 0 ? 'pointer-events-none' : ''}">{progress > 0 ? progress+'%' : 'Upload'}</button>
+            <input bind:this={file} type="file" name="file" accept=".mp4, .mov" required class="max-md:max-w-60">
+            <button type="submit" class="flex-none bg-green-400 border-green-400 text-sm select-none {progress > 0 ? 'pointer-events-none' : ''}">{progress > 0 ? progress+'%' : 'Upload'}</button>
         </form>
         {#if uploadMessage}
             <p class="mt-3">{uploadMessage}</p>

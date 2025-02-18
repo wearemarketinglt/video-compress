@@ -137,12 +137,12 @@
                     onfocusout={() => renameFocus(event)}
                     name="name" 
                     type="text" required 
-                    class="text-2xl xl:text-3xl w-auto min-w-0 -translate-x-1 border-transparent hover:border-white/[.2] focus:border-white/[.2]"
+                    class="text-xl lg:text-2xl xl:text-3xl w-auto min-w-0 -translate-x-1 border-transparent border-white/[.2]"
                 >
                 <button type="submit" class="hidden">Save</button>
             </div>
         </form>
-        <div class="{selectedFile.processed || compressing ? 'mt-5 mb-10' : ''}">
+        <div class="{selectedFile.processed || compressing ? 'mt-5' : ''}">
             {#if compressing}
                 <p>Compressing<span>.</span><span class="animate-[compressing_.7s__linear_infinite]">.</span><span class="animate-[compressing_.7s__linear_infinite]" style="animation-delay:.1s">.</span>
                 </p>
@@ -169,9 +169,9 @@
             use:enhance
             onsubmit={compressing = true}
         >
-            <div class="mt-5">
+            <div class="mt-7 lg:mt-10">
                 {#if selectedFile.processed}
-                    <h3 class="text-2xl xl:text-3xl">Redo</h3>
+                    <h3 class="text-xl lg:text-2xl xl:text-3xl">Redo</h3>
                 {/if}
                 <div class="mt-3">
                     <label>
