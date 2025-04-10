@@ -1,6 +1,7 @@
 <script>
     import { deserialize, enhance } from '$app/forms'
     import { onMount } from 'svelte'
+    import { formatDate } from '$lib'
 
     let { data, form } = $props()
 
@@ -13,6 +14,9 @@
     let compressForm = $state({})
     let name = $state(data.selectedFile?.name)
     let quality = $state(30)
+    let keep_size = $state(true)
+    let width = $state(data.selectedFile?.width)
+    let height = $state(data.selectedFile?.height)
 
     let interval
 
@@ -24,6 +28,15 @@
             if (!data.selectedFile.compressing) {
                 compressing = false
                 selectedFile = data.selectedFile
+                if(data.selectedFile.new_width) {
+                    width = data.selectedFile.new_width !== data.selectedFile.width ? data.selectedFile.new_width : data.selectedFile.width
+                }
+                if(data.selectedFile.new_width) {
+                    height = data.selectedFile.new_height !== data.selectedFile.height ? data.selectedFile.new_height : data.selectedFile.height
+                }
+                if(data.selectedFile.new_width && data.selectedFile.new_height) {
+                    keep_size = data.selectedFile.new_width !== data.selectedFile.width || data.selectedFile.new_height !== data.selectedFile.height ? false : true
+                }
             } else {
                 // check every 2 seconds if the file is done compressing
                 interval = setInterval(() => compressionStatus(id), 2000)
@@ -75,9 +88,9 @@
         escapePressed = false
     }
 
-    function downloadFile(slug, poster) {
+    function downloadFile(slug, poster = false) {
         const a = document.createElement('a')
-        a.href = `/api/download/${slug}${poster ? '?poster=true' : ''}`
+        a.href = `/api/download/${slug}?poster=${poster}&w=${width}&q=${quality}`
         a.download = slug
         document.body.appendChild(a)
         a.click()
@@ -109,6 +122,17 @@
         }
         globalPreview = state ? true : false
         window.localStorage.setItem('previews', state)
+    }
+
+    function handleSize() {
+        setTimeout(() => {
+            if (keep_size) {
+                width = selectedFile.width
+                height = selectedFile.height
+            } else {
+                height = Math.round(selectedFile.height * (width / selectedFile.width))
+            }
+        })
     }
 
     onMount(() => {
@@ -145,6 +169,11 @@
                 <button type="submit" class="hidden">Save</button>
             </div>
         </form>
+        {#if selectedFile.width && selectedFile.height}
+            <div class="mt-1">
+                <p>{selectedFile.width}x{selectedFile.height}px</p>
+            </div>
+        {/if}
         <div class="{selectedFile.processed || compressing ? 'mt-5' : ''}">
             {#if compressing}
                 <p>Compressing<span>.</span><span class="animate-[compressing_.7s__linear_infinite]">.</span><span class="animate-[compressing_.7s__linear_infinite]" style="animation-delay:.1s">.</span>
@@ -156,9 +185,10 @@
                     <button onclick={() => preview = !preview} class="bg-green-400 border-green-400 text-sm">Preview</button>
                 </div>
                 <div class="mt-5">
-                    <p class="text-sm">Quality: {selectedFile.quality} {#if selectedFile.size} | {selectedFile.size} MB {/if}</p>
+                    <p class="text-sm">{selectedFile.size} MB | {selectedFile.new_width ? selectedFile.new_width : selectedFile.width}x{selectedFile.new_height ? selectedFile.new_height : selectedFile.height}px</p>
+                    <p class="text-sm">Quality: {selectedFile.quality}</p>
                     {#if selectedFile.end_date}
-                        <p class="text-sm">Last compressed at: {selectedFile.end_date}</p>
+                        <p class="text-sm">Last compressed at: {formatDate(selectedFile.end_date)}</p>
                     {/if}
                 </div>
             {/if}
@@ -177,23 +207,43 @@
                 <div class="mt-3">
                     <label>
                         Quality:
-                        <input type="number" name="quality" required min="20" max="35" bind:value={quality} class="w-16 text-center">
-                        <span class="text-sm">20 to 35 (lower number = better quality)</span>
+                        <input type="number" name="quality" required min="18" max="35" bind:value={quality} class="w-16 text-center">
+                        <span class="text-sm">18 to 35 (lower number = better quality)</span>
+                    </label>
+                </div>
+                <div class="mt-2">
+                    <label class="flex items-center gap-1.5">
+                        <input type="checkbox" name="noaudio" checked>
+                        <span class="text-sm select-none">Remove audio</span>
                     </label>
                 </div>
                 <div>
-                    <label>
-                        <input type="checkbox" name="noaudio" checked>
-                        <span class="text-sm">No audio</span>
+                    <label class="flex items-center gap-1.5">
+                        <input type="checkbox" name="keep_size" bind:checked={keep_size} oninput={() => handleSize()}>
+                        <span class="text-sm select-none">Keep original size</span>
                     </label>
                 </div>
+                {#if !keep_size}
+                    <div class="mt-3">
+                        <label>
+                            Width:
+                            <input type="number" name="_width" required min="100" max={selectedFile.width} bind:value={width} class="w-16 text-center" oninput={() => handleSize() }>
+                        </label>
+                        <label>
+                            Height:
+                            <input type="number" name="_height" required min="100" max={selectedFile.height} bind:value={height} disabled class="w-16 text-center opacity-50 cursor-not-allowed">
+                        </label>
+                    </div>
+                {/if}
+                <input type="hidden" name="width" bind:value={width}>
+                <input type="hidden" name="height" bind:value={height}>
                 <button type="submit" class="bg-orange-400 border-orange-400 text-sm mt-5">Compress</button>
             </div>
         </form>
         {#if selectedFile.processed && !compressing && preview}
             <div class="mt-10 mb-5">
                 <video controls autoplay muted loop playsinline class="max-w-full h-auto object-cover">
-                    <source src="/api/download/{selectedFile.uuid}?preview=true" type="video/mp4">
+                    <source src="/api/download/{selectedFile.uuid}?preview=true&v={new Date(selectedFile.end_date).getTime()}" type="video/mp4">
                     <track kind="captions" src="" label="Captions" default>
                     Your browser does not support the video tag.
                 </video>

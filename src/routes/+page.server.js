@@ -1,10 +1,10 @@
 import { eq } from 'drizzle-orm'
 import { redirect } from '@sveltejs/kit'
-import { writeFileSync } from 'fs'
 import { filesTable } from '$lib/server/db/schema'
 import { db } from '$lib/server/db'
 import { formatDate } from '$lib'
 import fs from 'fs'
+import ffmpeg from 'fluent-ffmpeg'
 
 export const load = async () => {
     const files = await db.select().from(filesTable)
@@ -19,7 +19,7 @@ export const actions = {
         const data = await request.formData()
 
         if (!data.has('file')) {
-            return new Response('No file uploaded', { status: 400 })
+            throw new Error('No file uploaded')
         }
 
         const file = data.get('file')
@@ -28,18 +28,37 @@ export const actions = {
         const uuid = crypto.randomUUID()
         const file_path = `uploads/${uuid}`
 
-        writeFileSync(file_path, Buffer.from(await file.arrayBuffer()))
-
+        if (!file || !file_name || !format) {
+            throw new Error('Invalid file data provided')
+        }
+    
+        fs.writeFileSync(file_path, Buffer.from(await file.arrayBuffer()))
+    
+        const metadata = await new Promise((resolve, reject) => {
+            ffmpeg.ffprobe(file_path, (err, metadata) => {
+                if (err) reject(err)
+                resolve(metadata)
+            })
+        })
+    
+        const { streams } = metadata
+        const videoStream = streams.find(stream => stream.codec_type === 'video')
+        if (!videoStream || !videoStream.width || !videoStream.height) {
+            throw new Error('Invalid metadata: Unable to retrieve dimensions')
+        }
+    
         const item = {
             name: file_name,
             format,
+            width: videoStream.width,
+            height: videoStream.height,
             expiry_date: formatDate(new Date(), 1),
-            uuid: uuid
+            uuid
         }
-
+    
         await db.insert(filesTable).values(item)
 
-        redirect(302, `/${uuid}`)
+        throw redirect(302, `/${uuid}`)
     },
     extend: async ({request}) => {
         const data = await request.formData()

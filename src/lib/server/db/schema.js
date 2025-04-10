@@ -4,6 +4,8 @@ export const filesTable = sqliteTable('file', {
     id: integer('id').primaryKey(),
     name: text('name'),
     format: text('format'),
+    width: integer('width'),
+    height: integer('height'),
     expiry_date: text('expiry_date'),
     processed: integer('processed'),
     start_date: text('start_date'),

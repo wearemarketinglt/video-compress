@@ -10,6 +10,8 @@ export async function POST({ request, params }) {
     const quality = data.quality || 30
     const noaudio = data.noaudio || false
     const codec = data.codec || 'libx264'
+    const width = data.width || 1920
+    const height = data.height || null
 
     let output = `compressed/${slug}`
 
@@ -31,11 +33,17 @@ export async function POST({ request, params }) {
         if (noaudio) {
             ffmpegCommand.addOption(`${noaudio ? '-an' : ''}`);
         }
+        
+        if (width) {
+            // ffmpegCommand.addOption(`-vf "scale=${width}:${height ? height : '-1'}"`);
+            ffmpegCommand.size(`${width}x${height ? height : '?'}`);
+        }
 
         ffmpegCommand
             .videoCodec(codec)
             .format(codec === 'mjpeg' ? 'image2' : 'mp4')
             .output(output)
+            // .size(`${width}x${height ? height : '?'}`)
             .outputOptions(
                 codec === 'mjpeg' ?
                 [
