@@ -58,22 +58,21 @@
         <p class="px-5">Loading...</p>
     {:then files}
     <div class="row">
-        <div class="grid grid-cols-3 gap-4 px-5 py-2 border-b border-white/[.2] text-sm lg:text-base">
+        <div class="max-lg:flex justify-between lg:grid grid-cols-3 gap-4 px-5 py-2 border-b border-white/[.2] text-sm lg:text-base">
             <div class="max-md:col-span-2">Name</div>
-            <div class="max-md:hidden">Expires</div>
-            <div>Actions</div>
+            <div class="max-md:hidden"></div>
+            <div class="max-lg:w-16">Actions</div>
         </div>
         {#if files.length === 0}
             <p class="py-2.5 px-5">No files found</p>
         {:else}
             {#each files as file, i}
-                <form method="POST" use:enhance class="grid grid-cols-3 gap-4 items-center px-5 py-2.5 border-b border-white/[.2] text-sm lg:text-base">
+                <form method="POST" use:enhance class="max-lg:flex justify-between lg:grid grid-cols-3 gap-4 items-center px-5 py-2.5 border-b border-white/[.2] text-sm lg:text-base">
                     <div class="overflow-hidden text-ellipsis max-md:col-span-2">{file.name}</div>
-                    <div class="max-md:hidden">{file.expiry_date}</div>
-                    <div class="flex gap-2 items-center">
+                    <div class="max-md:hidden"></div>
+                    <div class="flex gap-2 items-center max-lg:w-16">
                         <input type="hidden" name="uuid" value="{file.uuid}">
                         <a href="/{file.uuid}" class="button text-xs bg-green-400 border-green-400">View</a>
-                        <button formaction="?/extend" type="submit" class="bg-orange-400 border-orange-400 text-xs max-lg:hidden">Extend</button>
                         <button formaction="?/delete" type="submit" class="no-styling" aria-label="Delete">
                             <svg class="w-5 h-auto fill-white" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="-5.0 -10.0 110.0 135.0">
                                 <path d="m66.227 94.266h-32.07c-2.9062 0.003906-5.6836-1.1875-7.6836-3.2891-1.9727-2.1016-3.1758-4.8047-3.4141-7.6758l-5.1367-55.109c-0.058594-0.82031 0.54688-1.5391 1.3672-1.6172 0.82031-0.074219 1.5469 0.51953 1.6406 1.3359l5.1328 55.113c0.44141 4.7656 3.8438 8.2227 8.0898 8.2227h32.07c4.2461 0 7.6484-3.4609 8.0898-8.2227l5.1406-55.113c0.09375-0.81641 0.82031-1.4102 1.6406-1.3359 0.82031 0.078125 1.4258 0.79688 1.3672 1.6172l-5.1406 55.113c-0.27344 2.9453-1.4844 5.6641-3.4141 7.6719-2 2.1016-4.7773 3.293-7.6797 3.2891z"/>
