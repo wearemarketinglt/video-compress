@@ -1,7 +1,6 @@
 <script>
-    import { deserialize, enhance } from '$app/forms'
+    import { enhance } from '$app/forms'
     import { onMount } from 'svelte'
-	// import { globalPreview } from './../stores.js'
 	import { globalPreview } from './../state.svelte.js'
     import { formatDate } from '$lib'
 
@@ -17,8 +16,8 @@
     let name = $state(data.selectedFile?.name)
     let quality = $state(30)
     let keep_size = $state(true)
-    let width = $state(data.selectedFile?.width)
-    let height = $state(data.selectedFile?.height)
+    let width = $state(data.selectedFile?.new_width)
+    let height = $state(data.selectedFile?.new_height)
 
     let interval
 
@@ -29,15 +28,6 @@
             if (!data.selectedFile.compressing) {
                 compressing = false
                 selectedFile = data.selectedFile
-                if(data.selectedFile.new_width) {
-                    width = data.selectedFile.new_width !== data.selectedFile.width ? data.selectedFile.new_width : data.selectedFile.width
-                }
-                if(data.selectedFile.new_width) {
-                    height = data.selectedFile.new_height !== data.selectedFile.height ? data.selectedFile.new_height : data.selectedFile.height
-                }
-                if(data.selectedFile.new_width && data.selectedFile.new_height) {
-                    keep_size = data.selectedFile.new_width !== data.selectedFile.width || data.selectedFile.new_height !== data.selectedFile.height ? false : true
-                }
             } else {
                 // check every 2 seconds if the file is done compressing
                 interval = setInterval(() => compressionStatus(id), 2000)
@@ -50,6 +40,8 @@
             if (form?.rename) {
                 name = form.rename.name
             }
+
+            keep_size = data.selectedFile?.width == data.selectedFile?.new_width
         }
     })
 
@@ -81,7 +73,7 @@
 
     function renameKeyboard(event) {
         if (event.key === 'Escape') {
-            event.target.value = oldFileName
+            name = oldFileName
             event.target.blur()
             escapePressed = true
         } 
@@ -90,7 +82,7 @@
     function renameFocus(event) {
         if (!escapePressed && event.target.value !== oldFileName) {
             // console.log('focusout oldname')
-            event.target.value = oldFileName
+            name = oldFileName
         }
         escapePressed = false
     }
@@ -129,9 +121,14 @@
                 width = selectedFile.width
                 height = selectedFile.height
             } else {
-                height = Math.round(selectedFile.height * (width / selectedFile.width))
+                width = selectedFile.new_width
+                height = selectedFile.new_height
             }
         })
+    }
+
+    function handleHeight() {
+        height = Math.round(selectedFile.height * (width / selectedFile.width))
     }
 
     onMount(() => {
@@ -147,17 +144,19 @@
             use:enhance 
             method="POST"
             action="/{id}?/rename"
-            onsubmit={() => oldFileName = selectedFile.name}
+            onsubmit={() => oldFileName = name}
         >
-            <div class="flex items-center gap-1 group">
+            <div class="relative max-w-full inline-flex tems-center gap-1 group border border-white/[.2] rounded-lg"
+            >
                 <input 
                     bind:value={name}
                     onkeydown={(event) => renameKeyboard(event)}
                     onfocusout={() => renameFocus(event)}
                     name="name" 
                     type="text" required 
-                    class="text-xl lg:text-2xl xl:text-3xl w-auto min-w-0 -translate-x-1 border-transparent border-white/[.2]"
+                    class="absolute text-lg lg:text-2xl xl:text-3xl w-full h-full no-style bg-transparent pl-2 text-ellipsis"
                 >
+                <span class="invisible text-lg lg:text-2xl xl:text-3xl py-1.5 px-2">{name}</span>
                 <button type="submit" class="hidden">Save</button>
             </div>
         </form>
@@ -191,6 +190,7 @@
             action="/{id}?/compress"
             use:enhance
             onsubmit={compressing = true}
+            class="{compressing ? 'hidden' : ''}"
         >
             <div class="mt-7 lg:mt-10">
                 {#if selectedFile.processed}
@@ -219,7 +219,7 @@
                     <div class="mt-3">
                         <label>
                             Width:
-                            <input type="number" name="_width" required min="100" max={selectedFile.width} bind:value={width} class="w-16 text-center" oninput={() => handleSize() }>
+                            <input type="number" name="_width" required min="100" max={selectedFile.width} bind:value={width} class="w-16 text-center" oninput={() => handleHeight() }>
                         </label>
                         <label>
                             Height:

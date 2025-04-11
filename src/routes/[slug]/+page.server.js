@@ -38,6 +38,8 @@ export const load = async ({url, params}) => {
         if ( videoStream && videoStream.width && videoStream.height) {
             selectedFile.width = videoStream.width
             selectedFile.height = videoStream.height
+            selectedFile.new_width = videoStream.width
+            selectedFile.new_height = videoStream.height
 
             await db.update(filesTable)
             .set({
