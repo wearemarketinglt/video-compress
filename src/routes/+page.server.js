@@ -6,11 +6,28 @@ import { formatDate } from '$lib'
 import fs from 'fs'
 import ffmpeg from 'fluent-ffmpeg'
 
-export const load = async () => {
+export const load = async ({url}) => {
+    const isArchive = url.searchParams.get('archive') == 1
     const files = await db.select().from(filesTable)
 
+    // filter files based on expiry_date
+    const filteredFiles = files.filter(file => {
+        if (isArchive) {
+            return file.expiry_date && new Date(file.expiry_date) < new Date()
+        }
+        if (file.expiry_date ) {
+            return new Date(file.expiry_date) > new Date()
+        }
+        return true
+    })
+
+    // sort by expiry_date
+    filteredFiles.sort((a, b) => {
+        return new Date(b.expiry_date) - new Date(a.expiry_date)
+    })
+
     return {
-       files 
+       files: filteredFiles
     }
 }
 
@@ -52,7 +69,6 @@ export const actions = {
             format,
             width: videoStream.width,
             height: videoStream.height,
-            expiry_date: formatDate(new Date(), 1),
             uuid
         }
     
