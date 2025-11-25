@@ -2,6 +2,7 @@
     import { enhance } from '$app/forms'
     import { goto } from '$app/navigation'
     import { PUBLIC_BODY_SIZE_LIMIT } from '$env/static/public'
+    import { dateAgo } from '$lib'
 
     let { data } = $props()
 
@@ -60,7 +61,7 @@
     <div class="row">
         <div class="max-lg:flex justify-between lg:grid grid-cols-3 gap-4 px-5 py-2 border-b border-white/[.2] text-sm lg:text-base">
             <div class="max-md:col-span-2">Name</div>
-            <div class="max-md:hidden"></div>
+            <div class="max-md:hidden">Last used</div>
             <div class="max-lg:w-16">Actions</div>
         </div>
         {#if files.length === 0}
@@ -69,7 +70,9 @@
             {#each files as file, i}
                 <form method="POST" use:enhance class="max-lg:flex justify-between lg:grid grid-cols-3 gap-4 items-center px-5 py-2.5 border-b border-white/[.2] text-sm lg:text-base">
                     <div class="overflow-hidden text-ellipsis max-md:col-span-2">{file.name}</div>
-                    <div class="max-md:hidden"></div>
+                    <div class="max-md:hidden">
+                        {file.end_date ? dateAgo(file.end_date) : '-'}
+                    </div>
                     <div class="flex gap-2 items-center max-lg:w-16">
                         <input type="hidden" name="uuid" value="{file.uuid}">
                         <a href="/{file.uuid}" class="button text-xs bg-green-400 border-green-400">View</a>
