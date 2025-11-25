@@ -16,8 +16,8 @@
     let name = $state(data.selectedFile?.name)
     let quality = $state(30)
     let keep_size = $state(true)
-    let width = $state(data.selectedFile?.new_width)
-    let height = $state(data.selectedFile?.new_height)
+    let width = $state(data.selectedFile?.width)
+    let height = $state(data.selectedFile?.height)
 
     let interval
 
@@ -41,7 +41,18 @@
                 name = form.rename.name
             }
 
-            keep_size = data.selectedFile?.width == data.selectedFile?.new_width
+            // If file has been processed and compressed with different dimensions
+            if (data.selectedFile.processed && data.selectedFile.new_width && data.selectedFile.new_height) {
+                const wasResized = data.selectedFile.width !== data.selectedFile.new_width
+                keep_size = !wasResized
+                width = data.selectedFile.new_width
+                height = data.selectedFile.new_height
+            } else {
+                // For unprocessed files, default to original size
+                keep_size = true
+                width = data.selectedFile.width
+                height = data.selectedFile.height
+            }
         }
     })
 
@@ -121,8 +132,9 @@
                 width = selectedFile.width
                 height = selectedFile.height
             } else {
-                width = selectedFile.new_width
-                height = selectedFile.new_height
+                // When unchecking, initialize with new_width/new_height if available, otherwise use original
+                width = selectedFile.new_width || selectedFile.width
+                height = selectedFile.new_height || selectedFile.height
             }
         })
     }

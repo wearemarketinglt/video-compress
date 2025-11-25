@@ -44,7 +44,9 @@ export const load = async ({url, params}) => {
             await db.update(filesTable)
             .set({
                 width: videoStream.width,
-                height: videoStream.height
+                height: videoStream.height,
+                new_width: videoStream.width,
+                new_height: videoStream.height
             })
             .where(eq(filesTable.uuid, id))
         }
@@ -101,6 +103,7 @@ export const actions = {
         const quality = data.get('quality')
         const noaudio = data.get('noaudio')
         const width = data.get('width') || 0
+        const height = data.get('height') || 0
 
         await db.update(filesTable).set({compressing: 1}).where(eq(filesTable.uuid, id))
         await db.update(filesTable).set({start_date: formatDate(new Date())}).where(eq(filesTable.uuid, id))
@@ -114,6 +117,7 @@ export const actions = {
                 quality,
                 noaudio,
                 width,
+                height,
             })
         })
 
@@ -138,6 +142,7 @@ export const actions = {
                 await db.update(filesTable).set({quality}).where(eq(filesTable.uuid, id))
                 await db.update(filesTable).set({expiry_date: formatDate(new Date(), 1)}).where(eq(filesTable.uuid, id)) // archived after 1 month of inactivity
                 await db.update(filesTable).set({size: size.toFixed(2)}).where(eq(filesTable.uuid, id))
+                await db.update(filesTable).set({new_width: parseInt(width), new_height: parseInt(height)}).where(eq(filesTable.uuid, id))
 
                 return {
                     status: 200,
