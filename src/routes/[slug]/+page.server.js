@@ -104,6 +104,8 @@ export const actions = {
         const noaudio = data.get('noaudio')
         const width = data.get('width') || 0
         const height = data.get('height') || 0
+        const hls = data.get('hls') === 'on' || data.get('hls') === 'true'
+        const hlsChunkSize = parseInt(data.get('hls_chunk_size') || '2')
 
         await db.update(filesTable).set({compressing: 1}).where(eq(filesTable.uuid, id))
         await db.update(filesTable).set({start_date: formatDate(new Date())}).where(eq(filesTable.uuid, id))
@@ -118,6 +120,8 @@ export const actions = {
                 noaudio,
                 width,
                 height,
+                hls,
+                hls_chunk_size: hlsChunkSize,
             })
         })
 
@@ -143,6 +147,7 @@ export const actions = {
                 await db.update(filesTable).set({expiry_date: formatDate(new Date(), 1)}).where(eq(filesTable.uuid, id)) // archived after 1 month of inactivity
                 await db.update(filesTable).set({size: size.toFixed(2)}).where(eq(filesTable.uuid, id))
                 await db.update(filesTable).set({new_width: parseInt(width), new_height: parseInt(height)}).where(eq(filesTable.uuid, id))
+                await db.update(filesTable).set({hls: hls ? 1 : 0, hls_chunk_size: hlsChunkSize}).where(eq(filesTable.uuid, id))
 
                 return {
                     status: 200,

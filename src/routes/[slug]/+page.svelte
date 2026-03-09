@@ -18,6 +18,8 @@
     let keep_size = $state(true)
     let width = $state(data.selectedFile?.width)
     let height = $state(data.selectedFile?.height)
+    let hls = $state(false)
+    let hls_chunk_size = $state(2)
 
     let interval
 
@@ -52,6 +54,11 @@
                 keep_size = true
                 width = data.selectedFile.width
                 height = data.selectedFile.height
+            }
+
+            if (data.selectedFile.hls) {
+                hls = !!data.selectedFile.hls
+                hls_chunk_size = data.selectedFile.hls_chunk_size || 2
             }
         }
     })
@@ -102,6 +109,15 @@
         const a = document.createElement('a')
         a.href = `/api/download/${slug}?poster=${poster}&w=${width}&q=${quality}`
         a.download = slug
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+    }
+
+    function downloadHLS(slug) {
+        const a = document.createElement('a')
+        a.href = `/api/download-hls/${slug}`
+        a.download = `${slug}-hls.zip`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
@@ -185,6 +201,9 @@
                 <div class="flex gap-2 flex-wrap">
                     <button onclick={() => downloadFile(selectedFile.uuid)} class="bg-green-400 border-green-400 text-sm">Download</button>
                     <button onclick={() => downloadFile(selectedFile.uuid, true)} class="bg-green-400 border-green-400 text-sm">Download poster</button>
+                    {#if selectedFile.hls}
+                        <button onclick={() => downloadHLS(selectedFile.uuid)} class="bg-green-400 border-green-400 text-sm">Download HLS</button>
+                    {/if}
                     <button onclick={() => preview = !preview} class="bg-green-400 border-green-400 text-sm">Preview</button>
                 </div>
                 <div class="mt-5">
@@ -228,7 +247,7 @@
                     </label>
                 </div>
                 {#if !keep_size}
-                    <div class="mt-3">
+                    <div class="my-3">
                         <label>
                             Width:
                             <input type="number" name="_width" required min="100" max={selectedFile.width} bind:value={width} class="w-16 text-center" oninput={() => handleHeight() }>
@@ -236,6 +255,21 @@
                         <label>
                             Height:
                             <input type="number" name="_height" required min="100" max={selectedFile.height} bind:value={height} disabled class="w-16 text-center opacity-50 cursor-not-allowed">
+                        </label>
+                    </div>
+                {/if}
+                <div>
+                    <label class="flex items-center gap-1.5">
+                        <input type="checkbox" name="hls" bind:checked={hls}>
+                        <span class="text-sm select-none">Generate HLS</span>
+                    </label>
+                </div>
+                {#if hls}
+                    <div class="mt-2">
+                        <label>
+                            Chunk size:
+                            <input type="number" name="hls_chunk_size" required min="1" max="30" bind:value={hls_chunk_size} class="w-16 text-center">
+                            <span class="text-sm">seconds per segment</span>
                         </label>
                     </div>
                 {/if}
