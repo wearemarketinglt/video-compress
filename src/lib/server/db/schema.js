@@ -16,4 +16,6 @@ export const filesTable = sqliteTable('file', {
     quality: integer('quality'),
     size: integer('size'),
     uuid: text('uuid'),
+    hls: integer('hls'),
+    hls_chunk_size: integer('hls_chunk_size'),
 })
