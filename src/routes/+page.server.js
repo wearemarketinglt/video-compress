@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm'
-import { redirect } from '@sveltejs/kit'
+import { redirect, error } from '@sveltejs/kit'
 import { filesTable } from '$lib/server/db/schema'
 import { db } from '$lib/server/db'
 import { formatDate } from '$lib'
+import { getUser } from '$lib/server/auth'
 import fs from 'fs'
 import ffmpeg from 'fluent-ffmpeg'
 
@@ -87,7 +88,10 @@ export const actions = {
 
         await db.update(filesTable).set({expiry_date: formatDate(new Date(), 1)}).where(eq(filesTable.uuid, uuid))
     },
-	delete: async ({request}) => {
+	delete: async ({request, cookies}) => {
+        const user = await getUser(cookies)
+        if (!user) throw error(401, 'You must be logged in to delete files')
+
         const data = await request.formData()
 
         const uuid = data.get('uuid')

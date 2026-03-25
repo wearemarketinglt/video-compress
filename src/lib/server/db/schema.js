@@ -1,5 +1,17 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 
+export const usersTable = sqliteTable('user', {
+    id: integer('id').primaryKey(),
+    github_id: integer('github_id').unique(),
+    name: text('name'),
+})
+
+export const sessionsTable = sqliteTable('session', {
+    id: text('id').primaryKey(),
+    user_id: integer('user_id').references(() => usersTable.id, { onDelete: 'cascade' }),
+    expires_at: text('expires_at'),
+})
+
 export const filesTable = sqliteTable('file', {
     id: integer('id').primaryKey(),
     name: text('name'),

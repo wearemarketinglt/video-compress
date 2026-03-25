@@ -244,7 +244,9 @@
                                 {#if selectedFile.hls}
                                     <button onclick={() => { downloadHLS(selectedFile.uuid); downloadDropdownOpen = false }} class="text-sm whitespace-nowrap w-full text-left">Download HLS</button>
                                 {/if}
+                                {#if data.user}
                                 <button onclick={() => { downloadOriginal(selectedFile.uuid); downloadDropdownOpen = false }} class="text-sm whitespace-nowrap w-full text-left">Download original</button>
+                                {/if}
                             </div>
                         {/if}
                     </div>
