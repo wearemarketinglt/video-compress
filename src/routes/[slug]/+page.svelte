@@ -24,6 +24,7 @@
     let interval
 
     let preview = $state(false)
+    let downloadDropdownOpen = $state(false)
 
     $effect(() => {
         if (status === 200) {
@@ -114,6 +115,15 @@
         document.body.removeChild(a)
     }
 
+    function downloadOriginal(slug) {
+        const a = document.createElement('a')
+        a.href = `/api/download/${slug}?original=true`
+        a.download = slug
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+    }
+
     function downloadHLS(slug) {
         const a = document.createElement('a')
         a.href = `/api/download-hls/${slug}`
@@ -164,7 +174,15 @@
             preview = globalPreview.state
         })
     })
+
+    function handleWindowClick(event) {
+        if (downloadDropdownOpen && !event.target.closest('.download-dropdown')) {
+            downloadDropdownOpen = false
+        }
+    }
 </script>
+
+<svelte:window onclick={handleWindowClick} />
 
 <section class="px-5">
     {#if status == 200}
@@ -199,11 +217,37 @@
                 </p>
             {:else if selectedFile.processed}
                 <div class="flex gap-2 flex-wrap">
-                    <button onclick={() => downloadFile(selectedFile.uuid)} class="bg-green-400 border-green-400 text-sm">Download</button>
-                    <button onclick={() => downloadFile(selectedFile.uuid, true)} class="bg-green-400 border-green-400 text-sm">Download poster</button>
-                    {#if selectedFile.hls}
-                        <button onclick={() => downloadHLS(selectedFile.uuid)} class="bg-green-400 border-green-400 text-sm">Download HLS</button>
-                    {/if}
+                    <div class="relative download-dropdown">
+                        <div class="flex">
+                            <div class="bg-green-400 rounded-lg flex">
+                                <button 
+                                    onclick={() => downloadFile(selectedFile.uuid)} 
+                                    class="no-styling text-sm text-black py-1 px-2 rounded-l-lg uppercase lg:hover:bg-white lg:hover:border-white"
+                                >
+                                        Download
+                                </button>
+                                <div class="w-px bg-black"></div>
+                                <button
+                                    onclick={() => downloadDropdownOpen = !downloadDropdownOpen}
+                                    aria-label="More download options"
+                                    class="no-styling text-black py-1 px-2 rounded-r-lg lg:hover:bg-white lg:hover:border-white"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 transition-transform {downloadDropdownOpen ? 'rotate-180' : ''}" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        {#if downloadDropdownOpen}
+                            <div class="absolute left-0 top-full mt-1 z-10 bg-green-400 rounded-lg overflow-hidden shadow-lg">
+                                <button onclick={() => { downloadFile(selectedFile.uuid, true); downloadDropdownOpen = false }} class="text-sm whitespace-nowrap w-full text-left">Download poster</button>
+                                {#if selectedFile.hls}
+                                    <button onclick={() => { downloadHLS(selectedFile.uuid); downloadDropdownOpen = false }} class="text-sm whitespace-nowrap w-full text-left">Download HLS</button>
+                                {/if}
+                                <button onclick={() => { downloadOriginal(selectedFile.uuid); downloadDropdownOpen = false }} class="text-sm whitespace-nowrap w-full text-left">Download original</button>
+                            </div>
+                        {/if}
+                    </div>
                     <button onclick={() => preview = !preview} class="bg-green-400 border-green-400 text-sm">Preview</button>
                 </div>
                 <div class="mt-5">

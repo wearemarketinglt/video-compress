@@ -10,6 +10,7 @@ export async function GET({ url, params }) {
     let poster = url.searchParams.get('poster')
     let width = url.searchParams.get('w')
     let quality = url.searchParams.get('q')
+    let original = url.searchParams.get('original')
 
     let selectedFile = await db.select().from(filesTable).where(eq(filesTable.uuid, id))
 
@@ -20,6 +21,21 @@ export async function GET({ url, params }) {
     selectedFile = selectedFile[0]
 
     let name = selectedFile.name
+
+    if (original === 'true') {
+        path = `uploads/${id}`
+        const filePath = resolve(path)
+        if (!existsSync(filePath)) {
+            return new Response('File not found', { status: 404 })
+        }
+        const stream = createReadStream(filePath)
+        return new Response(stream, {
+            headers: {
+                'Content-Type': 'application/octet-stream',
+                'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(selectedFile.name)}`,
+            },
+        })
+    }
 
     if (name.endsWith('.mov')) {
         name = name.slice(0, -4) + '.mp4'
